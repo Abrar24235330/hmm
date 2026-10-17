@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanda & Paw Paw 🐾</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky-top: #2a1f4d;
+    --sky-bottom: #7b4b94;
+    --grass: #4fa06b;
+    --grass-dark: #357a50;
+    --dirt: #6b4a3a;
+    --ink: #2b1b3a;
+    --paper: #fff4f8;
+    --yes: #ff4f8b;
+    --yes-dark: #c2255f;
+    --no: #6c7a96;
+    --no-dark: #46516b;
+    --pixel-font: "Press Start 2P", "Courier New", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--pixel-font);
+    color: var(--paper);
+    background: linear-gradient(var(--sky-top), var(--sky-bottom));
+    image-rendering: pixelated;
+  }
+
+  /* pixel stars */
+  .stars { position: fixed; inset: 0; pointer-events: none; }
+  .star {
+    position: absolute; width: 4px; height: 4px; background: #fff;
+    animation: twinkle 2.4s steps(2) infinite;
+  }
+  @keyframes twinkle { 50% { opacity: .2; } }
+
+  /* pixel moon */
+  .moon {
+    position: fixed; top: 6vh; right: 8vw; width: 48px; height: 48px;
+    background: #ffe9a8;
+    box-shadow: -8px 0 0 #ffe9a8, 8px 0 0 #ffe9a8, 0 -8px 0 #ffe9a8, 0 8px 0 #ffe9a8;
+    pointer-events: none;
+  }
+
+  /* ground */
+  .ground {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 18vh;
+    background:
+      repeating-linear-gradient(90deg, var(--grass-dark) 0 16px, var(--grass) 16px 32px) top / 100% 16px no-repeat,
+      var(--dirt);
+    border-top: 8px solid var(--grass);
+  }
+
+  /* layout: top half scene, bottom half buttons */
+  .app {
+    position: relative; z-index: 2;
+    height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 3vh 12px 0;
+  }
+  h1 {
+    font-size: clamp(14px, 3.4vw, 26px);
+    text-align: center; line-height: 1.5;
+    text-shadow: 3px 3px 0 var(--ink);
+  }
+  h1 span { color: #ffb3d1; }
+
+  .stage {
+    position: relative;
+    margin-top: 3vh;
+    width: min(560px, 96vw);
+    height: clamp(210px, 32vh, 300px);
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: 0;
+  }
+  .cat {
+    position: relative;
+    width: clamp(110px, 20vw, 168px);
+    transition: transform .5s steps(6);
+  }
+  .cat canvas {
+    width: 100%; height: auto; display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  .cat .name {
+    text-align: center; font-size: clamp(8px, 1.7vw, 11px);
+    margin-top: 8px; text-shadow: 2px 2px 0 var(--ink);
+  }
+  #pawpaw { margin-right: clamp(40px, 12vw, 90px); }
+  #pawpaw.angry { animation: grumble .35s steps(2) infinite; }
+  @keyframes grumble { 50% { transform: translateX(3px) rotate(1deg); } }
+  #sanda.sorry { animation: plead 1s steps(2) infinite; }
+  @keyframes plead { 50% { transform: translateY(5px); } }
+
+  .bubble {
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper); color: var(--ink);
+    padding: 8px 10px; font-size: clamp(7px, 1.5vw, 10px); line-height: 1.5;
+    border: 4px solid var(--ink);
+    white-space: nowrap; text-align: center;
+    box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+  }
+  .bubble::after {
+    content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+    border: 6px solid transparent; border-top-color: var(--ink);
+  }
+  .anger {
+    position: absolute; top: -4px; right: -6px;
+    font-size: clamp(18px, 3vw, 28px);
+    animation: pulse .5s steps(2) infinite;
+  }
+  @keyframes pulse { 50% { transform: scale(1.25); } }
+
+  /* question */
+  .ask {
+    margin-top: 3vh; text-align: center;
+    font-size: clamp(11px, 2.6vw, 18px); line-height: 1.6;
+    text-shadow: 3px 3px 0 var(--ink);
+  }
+  .hint { margin-top: 1.2vh; font-size: clamp(7px, 1.4vw, 9px); opacity: .85; min-height: 1.5em; }
+
+  /* buttons */
+  .choices {
+    margin-top: 2.5vh;
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: var(--pixel-font);
+    color: #fff; cursor: pointer;
+    border: 4px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform .08s steps(2), box-shadow .08s steps(2);
+    line-height: 1.2;
+  }
+  .btn:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn:focus-visible { outline: 4px dashed #ffe9a8; outline-offset: 4px; }
+  #yes { background: var(--yes); box-shadow: 6px 6px 0 var(--yes-dark), 6px 6px 0 4px var(--ink); }
+  #no  { background: var(--no);  box-shadow: 6px 6px 0 var(--no-dark), 6px 6px 0 4px var(--ink); }
+
+  /* Yes button takes half the display after 5 No clicks */
+  #yes.huge {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 50vh;
+    z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(28px, 7vw, 72px) !important;
+    padding: 0 !important;
+    border-left: none; border-right: none; border-bottom: none;
+    box-shadow: none;
+    animation: throb 0.6s steps(2) infinite;
+  }
+  @keyframes throb { 50% { filter: brightness(1.15); } }
+
+  /* love scene */
+  body.loved .choices, body.loved .ask, body.loved .hint { display: none; }
+  .rain { position: fixed; inset: 0; pointer-events: none; z-index: 10; overflow: hidden; }
+  .drop {
+    position: absolute; top: -40px; white-space: nowrap;
+    font-size: clamp(10px, 2.4vw, 18px);
+    text-shadow: 2px 2px 0 var(--ink);
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(115vh) rotate(var(--rot, 0deg)); }
+  }
+  .kissfx {
+    position: absolute; z-index: 5; pointer-events: none;
+    font-size: clamp(14px, 3vw, 24px);
+    animation: floatup 1.2s steps(8) forwards;
+  }
+  @keyframes floatup {
+    from { transform: translateY(0) scale(.8); opacity: 1; }
+    to   { transform: translateY(-60px) scale(1.4); opacity: 0; }
+  }
+  /* Sanda leans in & kisses Paw Paw's left cheek (the side facing him) */
+  #sanda.kiss { transform: translateX(calc(-1 * var(--lean, 70px))) rotate(-10deg); }
+  #pawpaw.receive { transform: rotate(3deg) translateX(-4px); }
+
+  .final {
+    position: fixed; left: 0; right: 0; bottom: 4vh; z-index: 11;
+    text-align: center; font-size: clamp(9px, 2vw, 14px); line-height: 1.8;
+    text-shadow: 3px 3px 0 var(--ink); display: none;
+  }
+  body.loved .final { display: block; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .star, #pawpaw.angry, #sanda.sorry, .anger, #yes.huge { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="ground"></div>
+  <div class="rain" id="rain"></div>
+
+  <main class="app">
+    <h1>Sanda <span>&hearts;</span> Paw Paw</h1>
+
+    <section class="stage" id="stage">
+      <div class="cat" id="pawpaw" class="angry">
+        <div class="bubble" id="pawBubble">Hmph! Kotha bolbona!</div>
+        <div class="anger" id="anger">&#128162;</div>
+        <canvas id="pawCanvas" width="16" height="16"></canvas>
+        <div class="name">Paw Paw</div>
+      </div>
+      <div class="cat" id="sanda">
+        <div class="bubble" id="sandaBubble">Sorry Paw Paw... maaf koro na?</div>
+        <canvas id="sandaCanvas" width="16" height="16"></canvas>
+        <div class="name">Sanda</div>
+      </div>
+    </section>
+
+    <p class="ask">Sorry granted?</p>
+    <p class="hint" id="hint">Sanda onek sorry bolche...</p>
+
+    <div class="choices" id="choices">
+      <button class="btn" id="yes">YES</button>
+      <button class="btn" id="no">NO</button>
+    </div>
+  </main>
+
+  <p class="final">Sanda &amp; Paw Paw &mdash; forever &hearts;</p>
+
+<script>
+(function () {
+  /* ---------- pixel art ---------- */
+  // 16x16 cat sprite. Letters map to palette colors.
+  const BASE = [
+    "..OO........OO..",
+    ".OBPO......OPBO.",
+    ".OBBBOOOOOOBBBO.",
+    "OBBBBBBBBBBBBBBO",
+    "OBBBBBBBBBBBBBBO",
+    "OBBBBBBBBBBBBBBO",
+    "OBBBBBBBBBBBBBBO",
+    "OBBBBBBNNBBBBBBO",
+    "OBBBBBBBBBBBBBBO",
+    ".OBBBBBBBBBBBBO.",
+    "..OOBBBBBBBBOO..",
+    ".OBBBBLLLLBBBBO.",
+    ".OBBBLLLLLLBBBO.",
+    ".OBBBLLLLLLBBBO.",
+    ".OBBBBBBBBBBBBO.",
+    "..OOOO....OOOO.."
+  ];
+
+  const PALETTES = {
+    sanda:  { O: "#2b2d42", B: "#8fa8d8", L: "#e4ecff", P: "#ffb3c6", N: "#ff7a9a", E: "#1b1b2b", T: "#6ec6ff", K: "#ff9bb8", R: "#e63946", S: "#2b2d42" },
+    pawpaw: { O: "#3a2a3a", B: "#ffc2d9", L: "#fff4f8", P: "#ff8fb1", N: "#ff5c8a", E: "#1b1b2b", T: "#6ec6ff", K: "#ff6f9c", R: "#e63946", S: "#3a2a3a", W: "#ff3d7f" }
+  };
+
+  // extra pixels per expression: [x, y, colorKey]
+  const EXPR = {
+    angry: [
+      [4,5,"E"],[4,6,"E"],[11,5,"E"],[11,6,"E"],
+      [3,3,"R"],[4,4,"R"],[5,4,"R"],      // left brow, slanting down to the middle
+      [12,3,"R"],[11,4,"R"],[10,4,"R"],   // right brow
+      [7,8,"S"],[8,8,"S"],[6,9,"S"],[9,9,"S"]  // frown
+    ],
+    sorry: [
+      [4,5,"E"],[4,6,"E"],[11,5,"E"],[11,6,"E"],
+      [3,4,"S"],[4,4,"S"],[5,3,"S"],      // sad brows
+      [12,4,"S"],[11,4,"S"],[10,3,"S"],
+      [4,7,"T"],[4,8,"T"],[11,7,"T"],[11,8,"T"], // tears
+      [7,9,"S"],[8,9,"S"]
+    ],
+    happy: [
+      [3,6,"E"],[4,5,"E"],[5,6,"E"],      // ^ ^ eyes
+      [10,6,"E"],[11,5,"E"],[12,6,"E"],
+      [2,7,"K"],[3,7,"K"],[12,7,"K"],[13,7,"K"], // blush
+      [6,8,"S"],[9,8,"S"],[7,9,"S"],[8,9,"S"]    // smile
+    ]
+  };
+  // Paw Paw's bow
+  const BOW = [[6,0,"W"],[6,1,"W"],[7,1,"R"],[8,1,"R"],[9,0,"W"],[9,1,"W"]];
+
+  function drawCat(canvasId, who, expression) {
+    const c = document.getElementById(canvasId);
+    const ctx = c.getContext("2d");
+    const pal = PALETTES[who];
+    ctx.clearRect(0, 0, 16, 16);
+    BASE.forEach((row, y) => {
+      [...row].forEach((ch, x) => {
+        if (ch === ".") return;
+        ctx.fillStyle = pal[ch];
+        ctx.fillRect(x, y, 1, 1);
+      });
+    });
+    EXPR[expression].forEach(([x, y, k]) => {
+      ctx.fillStyle = pal[k];
+      ctx.fillRect(x, y, 1, 1);
+    });
+    if (who === "pawpaw") {
+      BOW.forEach(([x, y, k]) => { ctx.fillStyle = pal[k]; ctx.fillRect(x, y, 1, 1); });
+    }
+  }
+
+  /* ---------- elements ---------- */
+  const pawpaw = document.getElementById("pawpaw");
+  const sanda = document.getElementById("sanda");
+  const pawBubble = document.getElementById("pawBubble");
+  const sandaBubble = document.getElementById("sandaBubble");
+  const anger = document.getElementById("anger");
+  const yes = document.getElementById("yes");
+  const no = document.getElementById("no");
+  const hint = document.getElementById("hint");
+  const rain = document.getElementById("rain");
+  const stage = document.getElementById("stage");
+
+  drawCat("pawCanvas", "pawpaw", "angry");
+  drawCat("sandaCanvas", "sanda", "sorry");
+  pawpaw.classList.add("angry");
+  sanda.classList.add("sorry");
+
+  /* stars */
+  const starBox = document.getElementById("stars");
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement("div");
+    s.className = "star";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = Math.random() * 70 + "%";
+    s.style.animationDelay = (Math.random() * 2.4) + "s";
+    starBox.appendChild(s);
+  }
+
+  /* ---------- Yes grows, No shrinks away ---------- */
+  const BASE_FONT = 16;      // px
+  const BASE_PAD_Y = 12;     // px
+  const BASE_PAD_X = 22;     // px
+  const GROW = 10;           // px per No click
+  const MAX_CLICKS = 5;
+  let noClicks = 0;
+
+  const noLines = [
+    "Plzzz Paw Paw...",
+    "Ektu maaf koro na? 🥺",
+    "Ar kokhono korbo na!",
+    "Last chance... please!",
+    "Okay, ar No nai 😼"
+  ];
+  const pawLines = [
+    "Hmph! Na!",
+    "Abar No?! 😾",
+    "Hmmmm...",
+    "Ekdom na... ",
+    "..."
+  ];
+
+  function applySize() {
+    yes.style.fontSize = (BASE_FONT + GROW * noClicks) + "px";
+    yes.style.padding = (BASE_PAD_Y + GROW * noClicks) + "px " + (BASE_PAD_X + GROW * noClicks) + "px";
+  }
+  applySize();
+
+  no.addEventListener("click", () => {
+    if (noClicks >= MAX_CLICKS) return;
+    noClicks++;
+    hint.textContent = noLines[noClicks - 1];
+    pawBubble.textContent = pawLines[noClicks - 1];
+    if (noClicks >= MAX_CLICKS) {
+      no.style.display = "none";                 // No disappears
+      yes.classList.add("huge");                 // Yes fills half of the display
+      yes.style.fontSize = ""; yes.style.padding = "";
+      sandaBubble.textContent = "Ekhon YES chara upay nai! 🥺";
+    } else {
+      applySize();                               // Yes gets +10px bigger
+    }
+  });
+
+  /* ---------- YES: love scene ---------- */
+  let loved = false;
+  yes.addEventListener("click", () => {
+    if (loved) return;
+    loved = true;
+    document.body.classList.add("loved");
+    yes.classList.remove("huge");
+    yes.style.display = "none";
+    no.style.display = "none";
+
+    pawpaw.classList.remove("angry");
+    sanda.classList.remove("sorry");
+    anger.style.display = "none";
+    drawCat("pawCanvas", "pawpaw", "happy");
+    drawCat("sandaCanvas", "sanda", "happy");
+    pawBubble.textContent = "Maaf korlam! I love you 💕";
+    sandaBubble.textContent = "Ummmah! 😘";
+
+    startRain();
+    startKissing();
+  });
+
+  function startRain() {
+    const words = ["I love you 💖", "ummmah 😘", "I love you 💕", "ummmah 💋", "love you 🐾", "ummmah ❤"];
+    const colors = ["#ffd1e3", "#ff8fb8", "#fff4f8", "#ffe9a8", "#ff4f8b"];
+    function drop() {
+      const d = document.createElement("div");
+      d.className = "drop";
+      d.textContent = words[Math.floor(Math.random() * words.length)];
+      d.style.left = (Math.random() * 92) + "vw";
+      d.style.color = colors[Math.floor(Math.random() * colors.length)];
+      d.style.setProperty("--rot", (Math.random() * 30 - 15) + "deg");
+      const dur = 4 + Math.random() * 4;
+      d.style.animationDuration = dur + "s";
+      rain.appendChild(d);
+      setTimeout(() => d.remove(), dur * 1000 + 200);
+    }
+    for (let i = 0; i < 12; i++) setTimeout(drop, i * 120);
+    setInterval(drop, 260);
+  }
+
+  function leanDistance() {
+    // move Sanda left until his face touches Paw Paw's cheek
+    const a = pawpaw.getBoundingClientRect();
+    const b = sanda.getBoundingClientRect();
+    return Math.max(10, b.left - a.right + b.width * 0.12);
+  }
+
+  function startKissing() {
+    function kiss() {
+      sanda.style.setProperty("--lean", leanDistance() + "px");
+      sanda.classList.add("kiss");
+      pawpaw.classList.add("receive");
+      setTimeout(spawnKissFx, 400);
+      setTimeout(() => {
+        sanda.classList.remove("kiss");
+        pawpaw.classList.remove("receive");
+      }, 900);
+    }
+    function spawnKissFx() {
+      const s = stage.getBoundingClientRect();
+      const a = pawpaw.getBoundingClientRect();
+      const fx = document.createElement("div");
+      fx.className = "kissfx";
+      fx.textContent = Math.random() > .5 ? "💋" : "❤";
+      fx.style.left = (a.right - s.left - 18) + "px";
+      fx.style.top = (a.top - s.top + a.height * 0.35) + "px";
+      stage.appendChild(fx);
+      setTimeout(() => fx.remove(), 1300);
+    }
+    setTimeout(kiss, 700);
+    setInterval(kiss, 1800);   // keeps kissing until the tab is closed
+  }
+})();
+</script>
+</body>
+</html>
